@@ -13,6 +13,7 @@ namespace UJect.Injection
     internal class Injector
     {
         private static readonly Type injectAttributeType = typeof(InjectAttribute);
+        private static readonly Type injectAllAttributeType = typeof(InjectAllAttribute);
 
         private const BindingFlags INJECTABLE_BINDING_FLAGS
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -114,14 +115,20 @@ namespace UJect.Injection
             foreach (var constructorInfo in constructors)
             {
                 var parameterInfos = constructorInfo.GetParameters();
-                if (parameterInfos.All(pi => pi.IsDefined(injectAttributeType, true)))
+
+                var isInjectableConstructor = constructorInfo.IsDefined(injectAllAttributeType, true);
+                if (!isInjectableConstructor)
+                {
+                    isInjectableConstructor = parameterInfos.All(pi => pi.IsDefined(injectAttributeType, true));
+                }
+                
+                if (isInjectableConstructor)
                 {
                     var argsKeys = new InjectionKey[parameterInfos.Length];
-
                     for (var paramIndex = 0; paramIndex < parameterInfos.Length; paramIndex++)
                     {
                         var parameterInfo = parameterInfos[paramIndex];
-                        var customId = parameterInfo.GetCustomAttribute<InjectAttribute>(true).CustomId;
+                        var customId = parameterInfo.GetCustomAttribute<InjectAttribute>(true)?.CustomId;
                         var argKey = new InjectionKey(parameterInfo.ParameterType, customId);
                         dependsOn.Add(argKey);
                         argsKeys[paramIndex] = argKey;

@@ -13,4 +13,12 @@ namespace UJect.Injection
             CustomId = customId;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Constructor)]
+    public class InjectAllAttribute : Attribute
+    {
+        public InjectAllAttribute()
+        {
+        }
+    }
 }
